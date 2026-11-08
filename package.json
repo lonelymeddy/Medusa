@@ -1,11 +1,11 @@
 {
-  "name": "jules-autonomous-agent",
+  "name": "medusa-autonomous-agent",
   "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "build": "next build && cp -r .next/static .next/standalone/.next/static 2>/dev/null || true",
+    "start": "node .next/standalone/server.js",
     "lint": "next lint",
     "test": "node --test"
   },

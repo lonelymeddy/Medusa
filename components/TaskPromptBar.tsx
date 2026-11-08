@@ -87,7 +87,7 @@ export const TaskPromptBar: React.FC<TaskPromptBarProps> = ({
             {isRunning ? (
               <>
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                <span>Running Jules Agent...</span>
+                <span>Running Medusa Agent...</span>
               </>
             ) : (
               <>

@@ -1,13 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
-import { Settings, Key, Shield, Cpu, Check, Terminal, Globe } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Settings, Key, Shield, Cpu, Check, Globe } from "lucide-react";
 
 export default function SettingsPage() {
   const [githubToken, setGithubToken] = useState("");
   const [modelProvider, setModelProvider] = useState("gemini-1.5-pro");
-  const [sandboxTimeout, setSandboxTimeout] = useState("120");
   const [saved, setSaved] = useState(false);
+  const [providerStatuses, setProviderStatuses] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/api/jules/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setProviderStatuses(data.status);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +31,7 @@ export default function SettingsPage() {
       <div className="border-b border-[#1b263b] pb-4">
         <h1 className="text-jules-xl font-bold tracking-tight text-white flex items-center gap-2">
           <Settings className="w-5 h-5 text-blue-400" />
-          <span>Jules Agent Settings</span>
+          <span>Medusa Agent Settings</span>
         </h1>
         <p className="text-jules-sm text-slate-400 mt-1">
           Configure authentication, LLM reasoning providers, execution sandboxes, and deployment parameters.
@@ -68,15 +79,32 @@ export default function SettingsPage() {
               onChange={(e) => setModelProvider(e.target.value)}
               className="w-full bg-[#080d16] border border-[#23314a] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-lg p-2.5 text-jules-base text-slate-100"
             >
-              <option value="gemini-1.5-pro">Google Gemini 1.5 Pro (Default Jules Reasoning Engine)</option>
+              <option value="gemini-1.5-pro">Google Gemini 1.5 Pro (Default Reasoning Engine)</option>
               <option value="claude-3-5-sonnet">Anthropic Claude 3.5 Sonnet</option>
               <option value="gpt-4o">OpenAI GPT-4o</option>
-              <option value="jules-autonomous-local">Jules Embedded Virtual Sandbox Runner</option>
+              <option value="local">Medusa Embedded Virtual Sandbox Runner</option>
             </select>
             <p className="text-jules-micro text-slate-500">
               Provides multi-lingual code reasoning, targeted merge diff formulation, and test reflection.
             </p>
           </div>
+
+          {providerStatuses && (
+            <div className="pt-2 border-t border-[#182336] flex flex-wrap gap-2 text-jules-micro">
+              <span className={`px-2 py-0.5 rounded border ${providerStatuses.gemini ? "border-emerald-500/30 text-emerald-400" : "border-slate-700 text-slate-500"}`}>
+                Gemini: {providerStatuses.gemini ? "Configured" : "Unset"}
+              </span>
+              <span className={`px-2 py-0.5 rounded border ${providerStatuses.openai ? "border-emerald-500/30 text-emerald-400" : "border-slate-700 text-slate-500"}`}>
+                OpenAI: {providerStatuses.openai ? "Configured" : "Unset"}
+              </span>
+              <span className={`px-2 py-0.5 rounded border ${providerStatuses.anthropic ? "border-emerald-500/30 text-emerald-400" : "border-slate-700 text-slate-500"}`}>
+                Anthropic: {providerStatuses.anthropic ? "Configured" : "Unset"}
+              </span>
+              <span className="px-2 py-0.5 rounded border border-emerald-500/30 text-emerald-400">
+                Local Runner: Available
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Deployment & Sandboxing */}
@@ -96,7 +124,7 @@ export default function SettingsPage() {
             <div className="p-3.5 rounded-lg border border-[#1f2d44] bg-[#0d1424]">
               <span className="text-jules-sm font-semibold text-white block">Render Container Ready</span>
               <p className="text-jules-micro text-slate-400 mt-1">
-                Dockerized standalone Next.js server on port 3000/10000 with Node v22.
+                Dockerized standalone Next.js server on 0.0.0.0 with dynamic $PORT.
               </p>
             </div>
           </div>

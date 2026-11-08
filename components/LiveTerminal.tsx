@@ -49,7 +49,7 @@ export const LiveTerminal: React.FC<LiveTerminalProps> = ({ logs, isRunning = fa
       <div className="h-10 bg-[#0e1626] border-b border-[#1b263b] px-3.5 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Terminal className="w-4 h-4 text-slate-400" />
-          <span className="text-jules-sm font-mono font-medium text-slate-200">Jules Terminal & Reasoner</span>
+          <span className="text-jules-sm font-mono font-medium text-slate-200">Medusa Terminal & Reasoner</span>
           {isRunning && (
             <span className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono bg-blue-500/10 text-blue-400 border border-blue-500/20">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping" />

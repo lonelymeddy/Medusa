@@ -8,7 +8,7 @@ import {
   Layers,
   GitBranch,
   Settings,
-  Activity,
+  Stethoscope,
   ExternalLink,
   Cpu
 } from "lucide-react";
@@ -21,6 +21,7 @@ export const Navbar: React.FC = () => {
     { name: "Workspace", href: "/", icon: Terminal },
     { name: "Sessions", href: "/sessions", icon: Layers },
     { name: "Repositories", href: "/repos", icon: GitBranch },
+    { name: "Tools", href: "/tools", icon: Stethoscope },
     { name: "Settings", href: "/settings", icon: Settings },
   ];
 
@@ -34,7 +35,7 @@ export const Navbar: React.FC = () => {
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-jules-base tracking-tight text-slate-100 group-hover:text-blue-400 transition-colors">
-                Jules
+                Medusa
               </span>
               <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium">
                 Autonomous
