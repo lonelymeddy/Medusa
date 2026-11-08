@@ -38,7 +38,7 @@ export default function SessionsPage() {
             <span>Autonomous Coding Sessions</span>
           </h1>
           <p className="text-jules-sm text-slate-400 mt-1">
-            History of Jules agent executions, test verifications, and created pull requests.
+            History of Medusa agent executions, test verifications, and created pull requests.
           </p>
         </div>
         <Link

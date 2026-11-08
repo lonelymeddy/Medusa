@@ -93,10 +93,10 @@ export default function WorkspacePage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#1b263b] pb-4">
         <div>
           <h1 className="text-jules-xl font-bold tracking-tight text-white flex items-center gap-2">
-            <span>Jules Autonomous Coding Workspace</span>
+            <span>Medusa Autonomous Coding Workspace</span>
           </h1>
           <p className="text-jules-sm text-slate-400 mt-0.5">
-            Polyglot autonomous agent that reproduces bugs, formulates merge diffs, verifies regression tests, and submits PRs.
+            Polyglot autonomous AI agent that reproduces bugs, formulates merge diffs, executes test suites, and submits pull requests.
           </p>
         </div>
 

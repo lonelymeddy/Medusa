@@ -28,7 +28,7 @@ export const GitDiffViewer: React.FC<GitDiffViewerProps> = ({
         <FileCode className="w-8 h-8 text-slate-600 mb-2.5" />
         <h4 className="text-jules-base font-medium text-slate-300">No code changes generated yet</h4>
         <p className="text-jules-sm text-slate-500 max-w-sm mt-1">
-          When Jules analyzes issues or implements features, atomic git merge diffs will appear here in real-time.
+          When Medusa analyzes issues or implements features, atomic git merge diffs will appear here in real-time.
         </p>
       </div>
     );

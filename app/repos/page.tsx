@@ -44,7 +44,7 @@ export default function RepositoriesPage() {
             <span>Connected Repositories</span>
           </h1>
           <p className="text-jules-sm text-slate-400 mt-1">
-            Repositories configured for Jules autonomous codebase analysis, regression testing, and PR creation.
+            Repositories configured for Medusa autonomous codebase analysis, regression testing, and PR creation.
           </p>
         </div>
       </div>
@@ -80,7 +80,7 @@ export default function RepositoriesPage() {
               <div className="flex items-center justify-between pt-2 border-t border-[#172236]">
                 <div className="flex items-center gap-2 text-jules-micro text-slate-400">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Jules Sandbox Ready</span>
+                  <span>Medusa Sandbox Ready</span>
                 </div>
 
                 <div className="flex items-center gap-2">

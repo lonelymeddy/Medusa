@@ -3,8 +3,8 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 
 export const metadata: Metadata = {
-  title: "Jules Autonomous Coding Agent",
-  description: "Autonomous software engineer agent that codes, debugs, fixes and verifies GitHub repositories across any programming language.",
+  title: "Medusa Autonomous Coding Agent",
+  description: "Autonomous software engineer agent that codes, debugs, fixes, and verifies GitHub repositories across any programming language.",
 };
 
 export default function RootLayout({
