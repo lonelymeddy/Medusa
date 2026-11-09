@@ -54,5 +54,13 @@
     "content": "Never use mock emojis or fake buttons.",
     "enabled": true,
     "updatedAt": 1794182409169
+  },
+  {
+    "id": "rule-1794208324080-zzed",
+    "title": "No Mockups Rule",
+    "category": "coding_standards",
+    "content": "Never use mock emojis or fake buttons.",
+    "enabled": true,
+    "updatedAt": 1794208324080
   }
 ]

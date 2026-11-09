@@ -28,3 +28,5 @@ dist/
 *.tsbuildinfo
 next-env.d.ts
 .medusa-sessions.json
+.env.production
+.medusa-investigations.json
