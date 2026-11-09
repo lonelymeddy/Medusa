@@ -1,122 +1,123 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Settings, Key, Shield, Cpu, Check, Globe, GitBranch } from "lucide-react";
+import React, { useState } from "react";
+import { Settings, Shield, Lock, Save, Check } from "lucide-react";
 
 export default function SettingsPage() {
-  const [githubToken, setGithubToken] = useState("");
-  const [modelProvider, setModelProvider] = useState("gemini-1.5-pro");
+  const [scopeStrictness, setScopeStrictness] = useState("strict");
+  const [allowNetworkScan, setAllowNetworkScan] = useState(true);
+  const [allowCodeAudit, setAllowCodeAudit] = useState(true);
+  const [allowMalwareTriage, setAllowMalwareTriage] = useState(true);
   const [saved, setSaved] = useState(false);
-  const [providerStatuses, setProviderStatuses] = useState<any>(null);
 
-  useEffect(() => {
-    fetch("/api/jules/settings")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setProviderStatuses(data.status);
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = () => {
     setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    setTimeout(() => setSaved(false), 2000);
   };
 
   return (
-    <div className="flex-1 p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto w-full space-y-6">
-      <div className="border-b border-[#162238] pb-4">
-        <h1 className="text-xl font-bold text-white flex items-center gap-2">
-          <Settings className="w-5 h-5 text-cyan-400" />
-          <span>Medusa Engine Settings & Access</span>
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Configure GitHub personal access tokens, reasoning engines, and deployment preferences.
+    <div className="flex-1 overflow-y-auto bg-[#000000] p-6 md:p-10 space-y-8">
+      <div className="max-w-4xl mx-auto space-y-2">
+        <div className="flex items-center gap-2">
+          <Settings className="w-5 h-5 text-[#E50914]" />
+          <h1 className="text-xl md:text-2xl font-bold uppercase tracking-wider text-white">
+            Security & Agent Settings
+          </h1>
+        </div>
+        <p className="text-xs md:text-sm text-[#A1A1AA]">
+          Configure authorized boundary rules, scope enforcement, and autonomous agent behavior.
         </p>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-6">
-        <div className="bg-[#090d16] border border-[#162238] rounded-2xl p-5 space-y-4">
-          <div className="flex items-center gap-2 border-b border-[#141e30] pb-3">
-            <Key className="w-4 h-4 text-cyan-400" />
-            <h3 className="text-sm font-semibold text-white">GitHub API Integration</h3>
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="p-6 rounded-2xl bg-[#0A0A0A] border border-[#242424] space-y-4">
+          <div className="flex items-center gap-2 border-b border-[#242424] pb-3">
+            <Shield className="w-4 h-4 text-[#E50914]" />
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-white">
+              Authorized Scope Enforcement
+            </h2>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-slate-300">
-              Personal Access Token (PAT)
-            </label>
-            <input
-              type="password"
-              value={githubToken}
-              onChange={(e) => setGithubToken(e.target.value)}
-              placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-              className="w-full bg-[#05080e] border border-[#1c293f] focus:border-cyan-500 rounded-lg p-2.5 text-xs text-slate-100 placeholder:text-slate-600 font-mono"
-            />
-            <p className="text-[11px] text-slate-500">
-              Enables pulling private repositories, generating remote branches, and submitting verified pull requests.
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-[#090d16] border border-[#162238] rounded-2xl p-5 space-y-4">
-          <div className="flex items-center gap-2 border-b border-[#141e30] pb-3">
-            <Cpu className="w-4 h-4 text-cyan-400" />
-            <h3 className="text-sm font-semibold text-white">Reasoning Engine Provider</h3>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-medium text-slate-300">
-              Default Foundation Model
-            </label>
-            <select
-              value={modelProvider}
-              onChange={(e) => setModelProvider(e.target.value)}
-              className="w-full bg-[#05080e] border border-[#1c293f] focus:border-cyan-500 rounded-lg p-2.5 text-xs text-slate-100 font-mono"
-            >
-              <option value="gemini-1.5-pro">Google Gemini 1.5 Pro</option>
-              <option value="claude-3-5-sonnet">Anthropic Claude 3.5 Sonnet</option>
-              <option value="gpt-4o">OpenAI GPT-4o</option>
-              <option value="local">Medusa Embedded Virtual Sandbox Runner</option>
-            </select>
-          </div>
-
-          {providerStatuses && (
-            <div className="pt-2 border-t border-[#141e30] flex flex-wrap gap-2 text-[10px] font-mono">
-              <span className={`px-2 py-0.5 rounded border ${providerStatuses.gemini ? "border-emerald-500/30 text-emerald-400 bg-emerald-500/10" : "border-slate-800 text-slate-500"}`}>
-                Gemini: {providerStatuses.gemini ? "Connected" : "Unset"}
-              </span>
-              <span className={`px-2 py-0.5 rounded border ${providerStatuses.openai ? "border-emerald-500/30 text-emerald-400 bg-emerald-500/10" : "border-slate-800 text-slate-500"}`}>
-                OpenAI: {providerStatuses.openai ? "Connected" : "Unset"}
-              </span>
-              <span className={`px-2 py-0.5 rounded border ${providerStatuses.anthropic ? "border-emerald-500/30 text-emerald-400 bg-emerald-500/10" : "border-slate-800 text-slate-500"}`}>
-                Anthropic: {providerStatuses.anthropic ? "Connected" : "Unset"}
-              </span>
-              <span className="px-2 py-0.5 rounded border border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
-                Local Runner: Operational
-              </span>
+          <div className="space-y-4 text-xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="font-semibold text-white block">Execution Boundaries</span>
+                <span className="text-[#A1A1AA]">Enforce explicit user authorization before launching network scans.</span>
+              </div>
+              <select
+                value={scopeStrictness}
+                onChange={(e) => setScopeStrictness(e.target.value)}
+                className="bg-[#000000] border border-[#242424] text-white rounded-full px-3 py-1.5 focus:border-[#E50914] focus:outline-none"
+              >
+                <option value="strict">Strict (Explicit Authorization Only)</option>
+                <option value="permissive">Standard Defense</option>
+              </select>
             </div>
-          )}
+
+            <div className="flex items-center justify-between pt-2 border-t border-[#242424]">
+              <div>
+                <span className="font-semibold text-white block">Active Network Service Discovery</span>
+                <span className="text-[#A1A1AA]">Allow Nmap / TCP socket port discovery within user authorized scope.</span>
+              </div>
+              <input
+                type="checkbox"
+                checked={allowNetworkScan}
+                onChange={(e) => setAllowNetworkScan(e.target.checked)}
+                className="w-4 h-4 accent-[#E50914] rounded cursor-pointer"
+              />
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-[#242424]">
+              <div>
+                <span className="font-semibold text-white block">Source Code SAST & Secret Auditing</span>
+                <span className="text-[#A1A1AA]">Detect hardcoded credentials, API keys, and injection vulnerabilities.</span>
+              </div>
+              <input
+                type="checkbox"
+                checked={allowCodeAudit}
+                onChange={(e) => setAllowCodeAudit(e.target.checked)}
+                className="w-4 h-4 accent-[#E50914] rounded cursor-pointer"
+              />
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-[#242424]">
+              <div>
+                <span className="font-semibold text-white block">Isolated Static Malware Triage</span>
+                <span className="text-[#A1A1AA]">Enable Shannon entropy calculation, hash generation, and string extraction.</span>
+              </div>
+              <input
+                type="checkbox"
+                checked={allowMalwareTriage}
+                onChange={(e) => setAllowMalwareTriage(e.target.checked)}
+                className="w-4 h-4 accent-[#E50914] rounded cursor-pointer"
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-2">
-          {saved && (
-            <span className="flex items-center gap-1.5 text-emerald-400 text-xs font-medium">
-              <Check className="w-4 h-4" />
-              Settings saved successfully
-            </span>
-          )}
-          <button
-            type="submit"
-            className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md shadow-blue-500/25 transition-all"
-          >
-            Save Configuration
-          </button>
+        <div className="p-6 rounded-2xl bg-[#0A0A0A] border border-[#242424] space-y-4">
+          <div className="flex items-center gap-2 border-b border-[#242424] pb-3">
+            <Lock className="w-4 h-4 text-[#E50914]" />
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-white">
+              Platform Hygiene & Security
+            </h2>
+          </div>
+
+          <p className="text-xs text-[#A1A1AA] leading-relaxed">
+            Medusa implements zero client-side credential storage. All API keys and secrets reside strictly in protected environment variables and server memory. Scans are executed defensibly without unauthorized compromise.
+          </p>
+
+          <div className="flex items-center justify-end pt-2">
+            <button
+              onClick={handleSave}
+              className="pill-btn-primary text-xs flex items-center gap-1.5"
+            >
+              {saved ? <Check className="w-3.5 h-3.5" /> : <Save className="w-3.5 h-3.5 text-white" />}
+              {saved ? "Saved Changes" : "Save Preferences"}
+            </button>
+          </div>
         </div>
-      </form>
+      </div>
     </div>
   );
 }
