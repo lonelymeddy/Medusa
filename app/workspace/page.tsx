@@ -1,5 +1,409 @@
-import WorkspacePage from "../page";
+"use client";
 
-export default function Page() {
-  return <WorkspacePage />;
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import {
+  Play,
+  Pause,
+  RotateCcw,
+  Square,
+  GitPullRequest,
+  GitBranch,
+  Terminal,
+  FileCode,
+  MessageSquare,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
+  Send,
+  Loader2,
+  ChevronDown,
+  Sparkles,
+  ExternalLink,
+} from "lucide-react";
+import { PlanChecklist } from "@/components/PlanChecklist";
+import { GitDiffViewer } from "@/components/GitDiffViewer";
+import { LiveTerminal } from "@/components/LiveTerminal";
+import { TelemetryPanel } from "@/components/TelemetryPanel";
+import { JulesSession, PlanStep, JulesLogEntry } from "@/lib/jules-engine/types";
+import { cn } from "@/lib/utils";
+
+function WorkspaceContent() {
+  const searchParams = useSearchParams();
+  const requestedSessionId = searchParams.get("sessionId");
+
+  const [currentSession, setCurrentSession] = useState<JulesSession | null>(null);
+  const [activeTab, setActiveTab] = useState<"terminal" | "diffs" | "chat">("diffs");
+  const [isRunning, setIsRunning] = useState(false);
+  const [isSubmittingPR, setIsSubmittingPR] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [chatSending, setChatSending] = useState(false);
+
+  useEffect(() => {
+    loadSession();
+  }, [requestedSessionId]);
+
+  const loadSession = async () => {
+    try {
+      if (requestedSessionId) {
+        const res = await fetch(`/api/jules/sessions?id=${requestedSessionId}`);
+        const data = await res.json();
+        if (data.success && data.session) {
+          setCurrentSession(data.session);
+          return;
+        }
+      }
+
+      const listRes = await fetch("/api/jules/sessions");
+      const listData = await listRes.json();
+      if (listData.success && listData.sessions?.length > 0) {
+        setCurrentSession(listData.sessions[0]);
+      } else {
+        const initRes = await fetch("/api/jules/sessions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            repoUrl: "https://github.com/facebook/react",
+            taskPrompt: "Fix memory leak and stream decoding boundary checks",
+          }),
+        });
+        const initData = await initRes.json();
+        if (initData.success) {
+          setCurrentSession(initData.session);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load workspace session", err);
+    }
+  };
+
+  const handleStepExecution = async (autoRun: boolean) => {
+    if (!currentSession) return;
+    setIsRunning(true);
+
+    try {
+      const res = await fetch("/api/jules/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: currentSession.id,
+          autoRunAll: autoRun,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.session) {
+        setCurrentSession(data.session);
+      }
+    } catch (err) {
+      console.error("Execution failed", err);
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
+  const handleSessionAction = async (action: "pause" | "resume" | "stop" | "retry") => {
+    if (!currentSession) return;
+    try {
+      const res = await fetch(`/api/jules/sessions/${currentSession.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json();
+      if (data.success && data.session) {
+        setCurrentSession(data.session);
+      }
+    } catch (err) {
+      console.error(`Action ${action} failed`, err);
+    }
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatInput.trim() || !currentSession) return;
+
+    setChatSending(true);
+    try {
+      const res = await fetch(`/api/jules/sessions/${currentSession.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "message",
+          message: chatInput.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.session) {
+        setCurrentSession(data.session);
+        setChatInput("");
+      }
+    } catch (err) {
+      console.error("Failed to send message", err);
+    } finally {
+      setChatSending(false);
+    }
+  };
+
+  const handleSubmitPR = async () => {
+    if (!currentSession) return;
+    setIsSubmittingPR(true);
+    try {
+      const res = await fetch("/api/jules/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: currentSession.id,
+          title: currentSession.taskPrompt,
+          description: `Autonomous bug fix and verification generated by Medusa Agent.`,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.session) {
+        setCurrentSession(data.session);
+      }
+    } catch (err) {
+      console.error("Error submitting PR", err);
+    } finally {
+      setIsSubmittingPR(false);
+    }
+  };
+
+  return (
+    <div className="flex-1 flex flex-col p-3 sm:p-5 lg:p-6 max-w-7xl mx-auto w-full gap-4">
+      <div className="bg-[#090d16] border border-[#162238] rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="space-y-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-mono text-sm font-bold text-cyan-400">
+              {currentSession?.repoUrl.replace("https://github.com/", "") || "Repository"}
+            </span>
+            <span className="text-slate-500">/</span>
+            <span className="text-xs font-mono text-slate-300 flex items-center gap-1">
+              <GitBranch className="w-3.5 h-3.5 text-blue-400" />
+              {currentSession?.targetBranch || "main"}
+            </span>
+            <span className={cn(
+              "text-[10px] font-mono px-2 py-0.5 rounded uppercase font-semibold",
+              currentSession?.status === "completed" && "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
+              currentSession?.status === "executing" && "bg-blue-500/10 text-blue-400 border border-blue-500/20 animate-pulse",
+              currentSession?.status === "failed" && "bg-rose-500/10 text-rose-400 border border-rose-500/20",
+              currentSession?.status === "idle" && "bg-slate-800 text-slate-400"
+            )}>
+              {currentSession?.status || "idle"}
+            </span>
+          </div>
+
+          <h1 className="text-base font-semibold text-white truncate max-w-2xl">
+            {currentSession?.taskPrompt || "Autonomous Task Execution"}
+          </h1>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => handleStepExecution(true)}
+            disabled={isRunning || currentSession?.status === "completed"}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-semibold shadow-md shadow-blue-500/20 transition-all"
+          >
+            {isRunning ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Running...</span>
+              </>
+            ) : (
+              <>
+                <Play className="w-3.5 h-3.5 fill-current" />
+                <span>Run Autonomous Loop</span>
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={() => handleStepExecution(false)}
+            disabled={isRunning || currentSession?.status === "completed"}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0e1626] hover:bg-[#162238] border border-[#202e48] disabled:opacity-50 text-slate-300 text-xs font-medium transition-colors"
+          >
+            <span>Next Step</span>
+          </button>
+
+          {currentSession?.status === "executing" ? (
+            <button
+              onClick={() => handleSessionAction("pause")}
+              className="p-1.5 rounded-lg bg-[#0e1626] hover:bg-[#162238] border border-[#202e48] text-amber-400"
+              title="Pause Execution"
+            >
+              <Pause className="w-4 h-4" />
+            </button>
+          ) : currentSession?.status === "paused" ? (
+            <button
+              onClick={() => handleSessionAction("resume")}
+              className="p-1.5 rounded-lg bg-[#0e1626] hover:bg-[#162238] border border-[#202e48] text-emerald-400"
+              title="Resume Execution"
+            >
+              <Play className="w-4 h-4 fill-current" />
+            </button>
+          ) : null}
+
+          {currentSession?.status === "failed" && (
+            <button
+              onClick={() => handleSessionAction("retry")}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-950/30 border border-rose-500/40 text-rose-300 text-xs font-medium hover:bg-rose-900/40"
+              title="Retry Failed Task"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Retry</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => handleSessionAction("stop")}
+            disabled={currentSession?.status === "completed" || currentSession?.status === "cancelled"}
+            className="p-1.5 rounded-lg bg-[#0e1626] hover:bg-[#162238] border border-[#202e48] disabled:opacity-40 text-slate-400 hover:text-rose-400 transition-colors"
+            title="Cancel Task"
+          >
+            <Square className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1">
+        <div className="lg:col-span-4 flex flex-col gap-4">
+          <PlanChecklist
+            plan={currentSession?.plan || []}
+            currentStepIndex={currentSession?.currentStepIndex || 0}
+          />
+
+          <TelemetryPanel
+            testResults={currentSession?.testResults}
+          />
+        </div>
+
+        <div className="lg:col-span-8 flex flex-col bg-[#090d16] border border-[#162238] rounded-2xl overflow-hidden min-h-[550px]">
+          <div className="px-4 py-3 border-b border-[#141e30] flex items-center justify-between bg-[#060a12]">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setActiveTab("diffs")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
+                  activeTab === "diffs"
+                    ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30"
+                    : "text-slate-400 hover:text-white"
+                )}
+              >
+                <FileCode className="w-3.5 h-3.5" />
+                <span>Code Diffs ({currentSession?.diffs?.length || 0})</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("terminal")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
+                  activeTab === "terminal"
+                    ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30"
+                    : "text-slate-400 hover:text-white"
+                )}
+              >
+                <Terminal className="w-3.5 h-3.5" />
+                <span>Live Logs ({currentSession?.logs?.length || 0})</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab("chat")}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
+                  activeTab === "chat"
+                    ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30"
+                    : "text-slate-400 hover:text-white"
+                )}
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>Conversation ({currentSession?.conversation?.length || 0})</span>
+              </button>
+            </div>
+
+            {currentSession?.newBranch && (
+              <span className="text-[11px] font-mono text-slate-400 hidden sm:inline">
+                Branch: <span className="text-cyan-300">{currentSession.newBranch}</span>
+              </span>
+            )}
+          </div>
+
+          <div className="flex-1 flex flex-col p-4 overflow-hidden">
+            {activeTab === "diffs" && (
+              <div className="flex-1 flex flex-col">
+                <GitDiffViewer
+                  diffs={currentSession?.diffs || []}
+                  prUrl={currentSession?.prUrl}
+                  branchName={currentSession?.newBranch}
+                  onSubmitPR={handleSubmitPR}
+                  isSubmitting={isSubmittingPR}
+                />
+              </div>
+            )}
+
+            {activeTab === "terminal" && (
+              <div className="flex-1 flex flex-col">
+                <LiveTerminal
+                  logs={currentSession?.logs || []}
+                  isRunning={isRunning}
+                />
+              </div>
+            )}
+
+            {activeTab === "chat" && (
+              <div className="flex-1 flex flex-col justify-between space-y-4">
+                <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+                  {(currentSession?.conversation || []).map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={cn(
+                        "p-3 rounded-xl max-w-xl text-xs space-y-1",
+                        msg.role === "user"
+                          ? "ml-auto bg-blue-600/20 border border-blue-500/30 text-slate-200"
+                          : "bg-[#05080e] border border-[#141e30] text-slate-300"
+                      )}
+                    >
+                      <div className="text-[10px] font-mono uppercase text-slate-500">
+                        {msg.role}
+                      </div>
+                      <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <form onSubmit={handleSendMessage} className="flex gap-2 pt-2 border-t border-[#141e30]">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder="Provide follow-up instruction to Medusa without losing context..."
+                    className="flex-1 bg-[#05080e] border border-[#1c293f] focus:border-cyan-500 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder:text-slate-500"
+                  />
+                  <button
+                    type="submit"
+                    disabled={chatSending || !chatInput.trim()}
+                    className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  >
+                    {chatSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                    <span>Send</span>
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function WorkspacePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex-1 flex items-center justify-center p-12 text-slate-400 font-mono text-xs">
+        <Loader2 className="w-6 h-6 animate-spin text-cyan-400 mr-2" />
+        Loading workspace environment...
+      </div>
+    }>
+      <WorkspaceContent />
+    </Suspense>
+  );
 }

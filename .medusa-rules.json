@@ -1,0 +1,58 @@
+[
+  {
+    "id": "rule-arch-1",
+    "title": "Modular Architecture & Strict TypeScript",
+    "category": "architecture",
+    "content": "Strict adherence to TypeScript types, separation of API routes, domain engines, and UI presentation components.",
+    "enabled": true,
+    "updatedAt": 1794181550846
+  },
+  {
+    "id": "rule-verify-1",
+    "title": "Pre-Commit Verification & Zero Phantom Diffs",
+    "category": "testing",
+    "content": "All file changes must apply targeted Git Merge Diffs and execute regression test suites before submission.",
+    "enabled": true,
+    "updatedAt": 1794181550849
+  },
+  {
+    "id": "rule-1794181761066-ofz3",
+    "title": "No Mockups Rule",
+    "category": "coding_standards",
+    "content": "Never use mock emojis or fake buttons.",
+    "enabled": true,
+    "updatedAt": 1794181761066
+  },
+  {
+    "id": "rule-1794181902099-ifr2",
+    "title": "No Mockups Rule",
+    "category": "coding_standards",
+    "content": "Never use mock emojis or fake buttons.",
+    "enabled": true,
+    "updatedAt": 1794181902099
+  },
+  {
+    "id": "rule-1794181998341-prey",
+    "title": "No Mockups Rule",
+    "category": "coding_standards",
+    "content": "Never use mock emojis or fake buttons.",
+    "enabled": true,
+    "updatedAt": 1794181998341
+  },
+  {
+    "id": "rule-1794182191446-djzz",
+    "title": "No Mockups Rule",
+    "category": "coding_standards",
+    "content": "Never use mock emojis or fake buttons.",
+    "enabled": true,
+    "updatedAt": 1794182191446
+  },
+  {
+    "id": "rule-1794182409169-b57i",
+    "title": "No Mockups Rule",
+    "category": "coding_standards",
+    "content": "Never use mock emojis or fake buttons.",
+    "enabled": true,
+    "updatedAt": 1794182409169
+  }
+]

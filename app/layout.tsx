@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Navbar } from "@/components/Navbar";
+import { AppShell } from "@/components/AppShell";
 
 export const metadata: Metadata = {
-  title: "Medusa Autonomous Coding Agent",
-  description: "Autonomous software engineer agent that codes, debugs, fixes, and verifies GitHub repositories across any programming language.",
+  title: "MEDUSA — Autonomous AI Software Engineer",
+  description: "Autonomous software engineering agent that investigates codebases, diagnoses bugs, formulates targeted merge diffs, executes test suites, and opens pull requests.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
@@ -14,11 +17,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen bg-[#080c14] text-slate-100 flex flex-col antialiased selection:bg-blue-500/20 selection:text-blue-300">
-        <Navbar />
-        <main className="flex-1 flex flex-col">
+      <body className="min-h-screen bg-[#070b12] text-slate-100 font-sans">
+        <AppShell>
           {children}
-        </main>
+        </AppShell>
       </body>
     </html>
   );
