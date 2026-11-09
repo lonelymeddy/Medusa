@@ -1,0 +1,17 @@
+[
+  {
+    "id": "dep-1794181551729",
+    "environment": "render",
+    "status": "healthy",
+    "targetUrl": "https://medusa-agent.onrender.com",
+    "timestamp": 1794181551729,
+    "diagnostics": {
+      "host": "0.0.0.0",
+      "portBinding": "3000",
+      "nodeVersion": "v22.22.1",
+      "staticAssetsCopied": true,
+      "clusterMode": "standalone"
+    },
+    "summary": "Production runtime operational on Render Node & Standalone Docker container. Host 0.0.0.0 bound dynamically."
+  }
+]

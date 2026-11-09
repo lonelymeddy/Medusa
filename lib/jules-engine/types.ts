@@ -19,7 +19,7 @@ export interface RepoMetadata {
   filesCount: number;
 }
 
-export type StepStatus = 'pending' | 'in_progress' | 'completed' | 'failed';
+export type StepStatus = 'pending' | 'in_progress' | 'completed' | 'failed' | 'paused';
 
 export interface PlanStep {
   id: string;
@@ -51,17 +51,25 @@ export interface FileDiff {
   deletions: number;
 }
 
+export interface ConversationMessage {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: number;
+}
+
 export interface JulesSession {
   id: string;
   repoUrl: string;
   targetBranch: string;
   newBranch: string;
   taskPrompt: string;
-  status: 'idle' | 'analyzing' | 'planning' | 'executing' | 'verifying' | 'completed' | 'failed';
+  status: 'idle' | 'analyzing' | 'planning' | 'executing' | 'verifying' | 'completed' | 'failed' | 'paused' | 'cancelled';
   plan: PlanStep[];
   currentStepIndex: number;
   diffs: FileDiff[];
   logs: JulesLogEntry[];
+  conversation?: ConversationMessage[];
   testResults?: TestRunResult;
   prUrl?: string;
   createdAt: number;
@@ -83,4 +91,42 @@ export interface TestRunResult {
   failedTests: number;
   durationMs: number;
   output: string;
+}
+
+export interface PullRequestRecord {
+  id: string;
+  sessionId: string;
+  repoUrl: string;
+  branch: string;
+  targetBranch: string;
+  title: string;
+  description: string;
+  prUrl: string;
+  status: 'open' | 'merged' | 'closed';
+  createdAt: number;
+  diffStats: {
+    filesCount: number;
+    additions: number;
+    deletions: number;
+  };
+}
+
+export interface ProjectRuleInstruction {
+  id: string;
+  repoUrl?: string;
+  title: string;
+  category: 'architecture' | 'coding_standards' | 'testing' | 'security' | 'forbidden_files' | 'deployment';
+  content: string;
+  enabled: boolean;
+  updatedAt: number;
+}
+
+export interface DeploymentRecord {
+  id: string;
+  environment: 'render' | 'vercel' | 'docker';
+  status: 'healthy' | 'warning' | 'failed';
+  targetUrl?: string;
+  timestamp: number;
+  diagnostics: Record<string, any>;
+  summary: string;
 }

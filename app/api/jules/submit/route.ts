@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { julesExecutor } from '../sessions/route';
+import { autonomousExecutor } from '@/lib/jules-engine/executor';
 import { GitHubService } from '@/lib/jules-engine/github';
 
 export async function POST(request: Request) {
@@ -10,7 +10,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'sessionId is required' }, { status: 400 });
     }
 
-    const session = julesExecutor.getSession(sessionId);
+    const session = autonomousExecutor.getSession(sessionId);
     if (!session) {
       return NextResponse.json({ success: false, error: `Session ${sessionId} not found` }, { status: 404 });
     }
@@ -18,7 +18,6 @@ export async function POST(request: Request) {
     const github = new GitHubService();
     const { owner, repo } = github.parseRepoUrl(session.repoUrl);
 
-    // Finalize submission
     const prNumber = Math.floor(Math.random() * 800) + 10;
     const prUrl = `https://github.com/${owner}/${repo}/pull/${prNumber}`;
     session.prUrl = prUrl;
@@ -33,10 +32,12 @@ export async function POST(request: Request) {
         prUrl,
         branch: session.newBranch,
         title: title || session.taskPrompt,
-        description: description || 'Autonomous code generation and verification conducted by Jules.',
+        description: description || 'Autonomous code generation and verification conducted by Medusa.',
         diffsCount: session.diffs.length,
       }
     });
+
+    autonomousExecutor.updateSession(session);
 
     return NextResponse.json({
       success: true,

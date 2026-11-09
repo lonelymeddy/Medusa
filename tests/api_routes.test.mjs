@@ -6,13 +6,18 @@ import { GET as getSessions, POST as createSession } from '../app/api/jules/sess
 import { POST as analyzeRepo } from '../app/api/jules/analyze/route.ts';
 import { POST as runSession } from '../app/api/jules/run/route.ts';
 import { POST as submitSession } from '../app/api/jules/submit/route.ts';
+import { POST as runTerminal } from '../app/api/jules/terminal/route.ts';
+import { GET as getRules, POST as createRule } from '../app/api/jules/knowledge-base/route.ts';
+import { GET as getDeployments } from '../app/api/jules/deployments/route.ts';
+import { GET as getModels } from '../app/api/jules/models/route.ts';
 
-test('GET /api/jules/repos returns default presets', async () => {
+test('GET /api/jules/repos returns default presets and separated examples', async () => {
   const req = new Request('http://localhost:3000/api/jules/repos');
   const res = await getRepos(req);
   const data = await res.json();
   assert.ok(Array.isArray(data.presets));
   assert.equal(data.presets.length, 4);
+  assert.ok(Array.isArray(data.examples));
 });
 
 test('POST /api/jules/analyze generates plan', async () => {
@@ -71,4 +76,47 @@ test('Full lifecycle: create session -> run steps -> submit PR', async () => {
   const submitData = await submitRes.json();
   assert.equal(submitData.success, true);
   assert.ok(submitData.prUrl.includes('fastapi/pull/'));
+});
+
+test('POST /api/jules/terminal runs sandboxed command', async () => {
+  const req = new Request('http://localhost:3000/api/jules/terminal', {
+    method: 'POST',
+    body: JSON.stringify({ command: 'node -v' })
+  });
+  const res = await runTerminal(req);
+  const data = await res.json();
+  assert.equal(data.success, true);
+  assert.ok(data.stdout.includes('v'));
+  assert.equal(data.exitCode, 0);
+});
+
+test('Knowledge Base: create and retrieve persistent rules', async () => {
+  const postReq = new Request('http://localhost:3000/api/jules/knowledge-base', {
+    method: 'POST',
+    body: JSON.stringify({
+      title: 'No Mockups Rule',
+      category: 'coding_standards',
+      content: 'Never use mock emojis or fake buttons.'
+    })
+  });
+  const postRes = await createRule(postReq);
+  const postData = await postRes.json();
+  assert.equal(postData.success, true);
+
+  const getRes = await getRules();
+  const getData = await getRes.json();
+  assert.equal(getData.success, true);
+  assert.ok(getData.rules.length >= 1);
+});
+
+test('Deployments & Models endpoints return structured system health', async () => {
+  const depRes = await getDeployments();
+  const depData = await depRes.json();
+  assert.equal(depData.success, true);
+  assert.ok(depData.deployments.length > 0);
+
+  const modRes = await getModels();
+  const modData = await modRes.json();
+  assert.equal(modData.success, true);
+  assert.ok(modData.models.length >= 4);
 });

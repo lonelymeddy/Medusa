@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { julesExecutor } from '../sessions/route';
+import { autonomousExecutor } from '@/lib/jules-engine/executor';
 
 export async function POST(request: Request) {
   try {
@@ -10,17 +10,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'sessionId is required' }, { status: 400 });
     }
 
-    const session = julesExecutor.getSession(sessionId);
+    const session = autonomousExecutor.getSession(sessionId);
     if (!session) {
       return NextResponse.json({ success: false, error: `Session ${sessionId} not found` }, { status: 404 });
     }
 
     if (autoRunAll) {
-      // Execute all remaining steps
       let finished = false;
       let lastResult = null;
       while (!finished && session.currentStepIndex < session.plan.length) {
-        lastResult = await julesExecutor.executeNextStep(sessionId);
+        lastResult = await autonomousExecutor.executeNextStep(sessionId);
         finished = lastResult.finished;
       }
       return NextResponse.json({
@@ -30,8 +29,7 @@ export async function POST(request: Request) {
       });
     }
 
-    // Step-by-step single iteration
-    const { session: updatedSession, finished } = await julesExecutor.executeNextStep(sessionId);
+    const { session: updatedSession, finished } = await autonomousExecutor.executeNextStep(sessionId);
 
     return NextResponse.json({
       success: true,
